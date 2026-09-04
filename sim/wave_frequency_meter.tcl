@@ -29,7 +29,6 @@ add_wave $DUT/latch_en                  ;# Pulso de captura (1 ciclo)
 add_wave $DUT/cnt_rst                   ;# Pulso de reinicio (1 ciclo)
 
 # --- Camino de datos ---
-add_wave $DUT/count_pulse               ;# Un pulso por flanco de freq_in
 add_wave -radix unsigned $DUT/bcd_count ;# Contadores BCD (se reinician cada ventana)
 add_wave -radix unsigned $DUT/bcd_disp  ;# Valor retenido: queda quieto en 5
 

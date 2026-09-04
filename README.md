@@ -32,9 +32,10 @@ docs/
 - `FSM_Control` cuenta 1000 de esos ticks: eso arma la ventana de 1 s. Durante ese
   tiempo mantiene `cnt_en = 1`. Al terminar pasa un ciclo por **Captura**
   (`latch_en`) y otro por **Reinicio** (`cnt_rst`), y vuelve a medir.
-- En el top, la señal incógnita se sincroniza con dos flip-flops y se le detecta el
-  flanco ascendente: cada flanco genera un pulso de un ciclo que habilita al banco
-  BCD. Así los contadores son 100% síncronos al clock de la placa.
+- La señal incógnita es el **clock del banco de contadores**: cada flanco ascendente
+  los hace avanzar, y el `Enable` de la FSM decide si ese flanco se cuenta o no.
+  El clear de los contadores es asincrono, porque el pulso de reinicio viene del
+  dominio de 100 MHz y dura 10 ns: un clock lento nunca lo vería.
 - El banco encadena 4 contadores BCD: el `carry_out` de las unidades habilita a las
   decenas, y así hasta los millares (rango 0000–9999 Hz).
 - El `latch_reg` congela el valor al final de cada ventana, para que el display no
@@ -53,7 +54,7 @@ source {sim/wave_frequency_meter.tcl}
 ```
 
 Eso reinicia, agrega las señales internas que importan (`state`, `cnt_en`,
-`latch_en`, `cnt_rst`, `count_pulse`, `bcd_count`, `bcd_disp`) y corre hasta el
+`latch_en`, `cnt_rst`, `bcd_count`, `bcd_disp`) y corre hasta el
 final. Después apretá **Zoom Fit**. Lo que hay que ver: `bcd_count` contándo y
 volviendo a cero cada ventana, mientras `bcd_disp` se queda quieto en el último
 valor medido.
@@ -79,7 +80,7 @@ Cada fila confirma un punto de la consigna:
 | `state` | Pasa casi todo el tiempo en `S_MEDICION` y cae un instante en `S_CAPTURA` y `S_REINICIO` al cerrar cada ventana. Es la secuencia estricta que pide el Bloque 4. |
 | `cnt_en` | Alto durante toda la ventana, bajo en esos dos ciclos: los contadores no cuentan mientras se captura y se reinicia. |
 | `latch_en` / `cnt_rst` | Pulsos de **un** ciclo, y primero captura, después reinicia. Si fuera al revés, el registro guardaría ceros. |
-| `count_pulse` | Cinco pulsos angostos por ventana, uno por cada flanco ascendente de `freq_in`. Nunca anchos ni dobles: el sincronizador y el detector de flanco funcionan. |
+| `freq_in` | Cinco flancos ascendentes por ventana: es el clock de los contadores. |
 | `bcd_count` | Sube `1,0,0,0` → `5,0,0,0` y vuelve a cero al inicio de cada ventana. Cuenta y se reinicia. |
 | `bcd_disp` | Vale `0,0,0,0` en la primera ventana (todavía no se midió nada) y `5,0,0,0` desde la primera captura en adelante, **plano** mientras `bcd_count` ya está contando de nuevo. Esto es el latch cumpliendo su función: el display muestra un número estable en vez de parpadear. |
 | `medicion` | Llega a 4: las cuatro ventanas se completaron y todas midieron lo mismo. |

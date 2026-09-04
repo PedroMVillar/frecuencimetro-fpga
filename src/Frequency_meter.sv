@@ -42,26 +42,13 @@ module Frequency_meter #(
         .latch_en   (latch_en)
     );
 
-    // ------- Sincronizacion y deteccion de flanco de la senial incognita -------
-    // La senial externa es asincrona respecto del clock de 100 MHz: se registra
-    // dos veces para evitar metaestabilidad y se genera un pulso de un ciclo por
-    // cada flanco ascendente. Ese pulso es lo que realmente cuenta el banco BCD.
-    logic freq_sync0, freq_sync1, freq_prev;
-    logic count_pulse;
-
-    always_ff @(posedge clk) begin
-        freq_sync0 <= servo0;
-        freq_sync1 <= freq_sync0;
-        freq_prev  <= freq_sync1;
-    end
-
-    assign count_pulse = cnt_en && freq_sync1 && !freq_prev;
-
     // ---------------- Bloque 3: Banco de contadores BCD ----------------
+    // El banco se clockea con la senial incognita: cada flanco ascendente hace
+    // avanzar los contadores, y la FSM decide con 'en' si ese flanco se cuenta o no.
     bcd_counter_bank u_bank (
-        .clk        (clk),
+        .clk        (servo0),
         .rst        (rst || cnt_rst),
-        .en         (count_pulse),
+        .en         (cnt_en),
         .bcd        (bcd_count)
     );
 

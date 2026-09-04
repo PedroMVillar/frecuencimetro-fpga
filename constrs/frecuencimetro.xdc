@@ -19,8 +19,10 @@ set_property -dict {PACKAGE_PIN M14 IOSTANDARD LVCMOS33} [get_ports {servo0}]
 ## Pull-down interno: con el generador desconectado la entrada queda en 0 firme.
 set_property PULLTYPE PULLDOWN [get_ports {servo0}]
 
-## Senial asincrona al clock: entra a un sincronizador, no se analiza su timing.
-set_false_path -from [get_ports servo0]
+## servo0 maneja el clock del banco de contadores. Vivado va a insertar un BUFG
+## automaticamente y avisar que un pin comun se usa como reloj: es esperable en
+## esta arquitectura. Su frecuencia es desconocida, asi que no se le pone
+## create_clock; los caminos de ese dominio quedan sin analizar en timing.
 
 ## Display de 7 segmentos (modulo D0)
 set_property -dict {PACKAGE_PIN D5 IOSTANDARD LVCMOS33} [get_ports {D0_AN[0]}]

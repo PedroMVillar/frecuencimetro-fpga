@@ -9,15 +9,15 @@
 
 
 module bcd_counter_bank(
-    input  logic       clk,
-    input  logic       rst,        // Reset sincrono de todos los digitos
-    input  logic       en,         // Un pulso por cada flanco de la senial incognita
+    input  logic       clk,        // Senial incognita (NO el reloj de la placa)
+    input  logic       rst,        // Clear asincrono de todos los digitos
+    input  logic       en,         // Ventana de medicion abierta (Enable de la FSM)
     output logic [3:0] bcd [0:3]   // Valor de los 4 digitos
     );
 
     logic carry [0:3];
 
-    // Unidades: se habilitan directamente con el pulso de entrada
+    // Unidades: cuentan mientras la ventana de medicion este abierta
     bcd_counter u_unidades (
         .clk        (clk),
         .rst        (rst),
