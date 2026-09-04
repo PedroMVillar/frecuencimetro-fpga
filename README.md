@@ -93,20 +93,27 @@ esos mismos ~1 µs son 1 s, y el `0005` sería una entrada de 5 Hz.
 |---|---|---|
 | `clk` | F14 | Oscilador de 100 MHz |
 | `rst` | J2 | BTN0 |
-| `freq_in` | M14 | Pin de señal del header de servo0 — entrada del generador |
-| `led_activity` | G1 | LED0, monitor de actividad de la entrada |
+| `servo_in[0..3]` | M14, M16, L15, L16 | Los 4 headers de servo — entrada del generador |
+| `led_mon[0..3]` | G1, G2, F1, F2 | LED0..LED3, espejo de cada header |
 | `D0_SEG` / `D0_AN` | — | Display de 7 segmentos, módulo D0 |
 
-El XDC deja comentada la alternativa de conectar `freq_in` a BTN1, para probar sin
-generador (cuenta los rebotes del pulsador: sirve como prueba de vida, no como
-medición).
+La señal incognita entra por **cualquiera** de los cuatro headers de servo: el
+diseño los combina con un OR y los que quedan libres están en 0 firme por el
+pull-down. Cada LED espeja su header, así que se ve de un vistazo por cuál está
+entrando la señal.
 
 ## Prueba con generador de funciones
 
-**Conexionado.** La salida del generador va al pin de **señal** del header de servo0
-y la masa del generador a **GND** del mismo header. Verificá en la serigrafía de la
-placa cuál es cada uno antes de conectar: el tercer pin del header es **+5 V** y no
-hay que tocarlo. Sin masa común la medición da cualquier cosa.
+**Conexionado.** La salida del generador va al pin de **señal** de cualquiera de los
+cuatro headers de servo, y la masa del generador a **GND** del mismo header. Cada
+header tiene tres pines: GND, +5 V y señal. El de +5 V no hay que tocarlo. Sin masa
+común la medición da cualquier cosa.
+
+**Diagnóstico con los LEDs.** Con el generador a 5 Hz, el LED del header donde
+enchufaste tiene que parpadear. Si no parpadea ninguno de los cuatro, la señal no
+está llegando a la FPGA y el problema es eléctrico, no del diseño: pin equivocado
+del header, falta de masa común, nivel de señal insuficiente, o headers bufferados
+como salida (ver más abajo).
 
 **Ajustes del generador — revisar antes de conectar:**
 
@@ -145,3 +152,19 @@ el borde de la ventana entra un flanco más o uno menos. Es el error de
 cuantización ±1 inherente al método directo, y es la razón por la que este método
 pierde precisión relativa a bajas frecuencias: ±1 sobre 5 Hz es un 20 % de error,
 mientras que ±1 sobre 9999 Hz es un 0,01 %.
+
+### Si ningún LED responde
+
+Los headers de servo de algunas placas están bufferados con un level shifter
+**unidireccional** hacia 5 V, pensado para mandarle PWM a un servo, no para recibir
+señal. Si ese es el caso, esos pines no pueden usarse como entrada por más que el
+XDC lo permita: la señal muere en el buffer y nunca llega a la FPGA.
+
+Cómo confirmarlo: medir con el osciloscopio directamente sobre el pin del header
+con el generador conectado. Si ahí está la onda cuadrada y ningún LED se mueve, el
+pin no es capaz de entrada.
+
+En ese caso hay que preguntarle a la cátedra por qué pin debe entrar la señal,
+porque el XDC master que provee no declara **ningún** header de propósito general:
+solo switches, pulsadores, LEDs, displays, HDMI, audio, BLE y estos cuatro servos.
+Todo lo demás está cableado a componentes de la placa.

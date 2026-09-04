@@ -12,12 +12,12 @@ module Frequency_meter #(
     parameter int DIV_COUNT = 100_000,  // Ciclos de 100 MHz por tick (1 ms)
     parameter int MS_WINDOW = 1000      // Ticks por ventana de medicion (1 s)
 )(
-    input  logic       clk,       // 100 MHz de la Boolean Board
-    input  logic       rst,       // Reset general (pulsador)
-    input  logic       freq_in,   // Senial incognita
+    input  logic       clk,        // 100 MHz de la Boolean Board
+    input  logic       rst,        // Reset general (pulsador)
+    input  logic [3:0] servo_in,   // Senial incognita: los 4 headers de servo
     output logic [7:0] D0_SEG,
     output logic [3:0] D0_AN,
-    output logic       led_activity  // Diagnostico: refleja la entrada ya sincronizada
+    output logic [3:0] led_mon     // Espejo de cada header (diagnostico de banco)
     );
 
     logic tick_1ms;
@@ -47,20 +47,27 @@ module Frequency_meter #(
     // La senial externa es asincrona respecto del clock de 100 MHz: se registra
     // dos veces para evitar metaestabilidad y se genera un pulso de un ciclo por
     // cada flanco ascendente. Ese pulso es lo que realmente cuenta el banco BCD.
-    logic freq_sync0, freq_sync1, freq_prev;
+    //
+    // Se escuchan los cuatro headers de servo en paralelo y se los combina con un
+    // OR: los pines sin conectar tienen pull-down (ver XDC), asi que valen 0 firme
+    // y no aportan nada. En la practica esto significa que el generador se puede
+    // enchufar en cualquiera de los cuatro headers y el frecuencimetro igual mide.
+    logic [3:0] servo_sync0, servo_sync1;
+    logic freq_level, freq_prev;
     logic count_pulse;
 
     always_ff @(posedge clk) begin
-        freq_sync0 <= freq_in;
-        freq_sync1 <= freq_sync0;
-        freq_prev  <= freq_sync1;
+        servo_sync0 <= servo_in;
+        servo_sync1 <= servo_sync0;
+        freq_prev   <= freq_level;
     end
 
-    assign count_pulse = cnt_en && freq_sync1 && !freq_prev;
+    assign freq_level  = |servo_sync1;
+    assign count_pulse = cnt_en && freq_level && !freq_prev;
 
-    // Monitor de banco: si el LED esta apagado o encendido fijo, la senial no
-    // esta llegando al pin. A baja frecuencia parpadea; a alta se ve a media luz.
-    assign led_activity = freq_sync1;
+    // Monitor de banco: cada LED espeja su header ya sincronizado. Si ningun LED
+    // reacciona con el generador conectado, la senial no esta llegando a la FPGA.
+    assign led_mon = servo_sync1;
 
     // ---------------- Bloque 3: Banco de contadores BCD ----------------
     bcd_counter_bank u_bank (
