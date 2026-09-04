@@ -1,0 +1,32 @@
+# Proyecto de Vivado (se regenera; solo versionamos src/, sim/ y constrs/)
+*.xpr
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.gen/
+*.srcs/
+.Xil/
+
+# Logs y archivos temporales de Vivado / xsim
+vivado*.jou
+vivado*.log
+vivado*.str
+vivado_pid*.str
+webtalk*.jou
+webtalk*.log
+xsim.dir/
+*.wdb
+*.pb
+*.jou
+*.log
+
+# Bitstreams
+*.bit
+*.bin
+*.ltx
+
+# Sistema
+Thumbs.db
+desktop.ini
