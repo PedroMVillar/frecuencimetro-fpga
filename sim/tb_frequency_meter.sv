@@ -23,12 +23,14 @@ module tb_frequency_meter;
     logic freq_in = 0;
     logic [7:0] D0_SEG;
     logic [3:0] D0_AN;
+    logic       led_activity;
 
     Frequency_meter #(
         .DIV_COUNT (DIV_COUNT),
         .MS_WINDOW (MS_WINDOW)
     ) dut (
-        .clk(clk), .rst(rst), .freq_in(freq_in), .D0_SEG(D0_SEG), .D0_AN(D0_AN)
+        .clk(clk), .rst(rst), .freq_in(freq_in),
+        .D0_SEG(D0_SEG), .D0_AN(D0_AN), .led_activity(led_activity)
     );
 
     always #5 clk = ~clk;                       // 100 MHz

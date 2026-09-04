@@ -12,12 +12,25 @@ set_property CONFIG_VOLTAGE 3.3 [current_design]
 ## Reset general -> pulsador BTN0
 set_property -dict {PACKAGE_PIN J2 IOSTANDARD LVCMOS33} [get_ports {rst}]
 
-## Senial incognita -> pulsador BTN1 (para probar a mano, con rebotes)
-set_property -dict {PACKAGE_PIN J5 IOSTANDARD LVCMOS33} [get_ports {freq_in}]
+## Senial incognita -> pin de senial del header de servo0.
+## Aca se conecta la salida del generador de funciones (0 a 3,3 V, onda cuadrada).
+set_property -dict {PACKAGE_PIN M14 IOSTANDARD LVCMOS33} [get_ports {freq_in}]
 
-## Alternativa: senial incognita desde un generador de funciones en el pin
-## del header de servos (servo0). Comentar la linea de arriba y descomentar esta.
-#set_property -dict {PACKAGE_PIN M14 IOSTANDARD LVCMOS33} [get_ports {freq_in}]
+## Resistencia de pull-down interna: con el generador desconectado la entrada
+## queda en 0 firme en vez de flotando, asi no cuenta ruido ambiente.
+## Si tu version de Vivado no acepta PULLTYPE, comentar esta linea (no es critica).
+set_property PULLTYPE PULLDOWN [get_ports {freq_in}]
+
+## La senial incognita es asincrona al clock de la placa y entra a un
+## sincronizador de dos flip-flops, asi que su camino no se analiza en timing.
+set_false_path -from [get_ports freq_in]
+
+## Alternativa sin generador: pulsador BTN1 (cuenta los rebotes, sirve solo como
+## prueba de vida). Comentar las cuatro lineas de arriba y descomentar esta.
+#set_property -dict {PACKAGE_PIN J5 IOSTANDARD LVCMOS33} [get_ports {freq_in}]
+
+## LED0 -> monitor de actividad de la entrada (diagnostico de banco)
+set_property -dict {PACKAGE_PIN G1 IOSTANDARD LVCMOS33} [get_ports {led_activity}]
 
 ## Display de 7 segmentos (modulo D0)
 set_property -dict {PACKAGE_PIN D5 IOSTANDARD LVCMOS33} [get_ports {D0_AN[0]}]

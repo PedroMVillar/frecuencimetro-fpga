@@ -16,7 +16,8 @@ module Frequency_meter #(
     input  logic       rst,       // Reset general (pulsador)
     input  logic       freq_in,   // Senial incognita
     output logic [7:0] D0_SEG,
-    output logic [3:0] D0_AN
+    output logic [3:0] D0_AN,
+    output logic       led_activity  // Diagnostico: refleja la entrada ya sincronizada
     );
 
     logic tick_1ms;
@@ -56,6 +57,10 @@ module Frequency_meter #(
     end
 
     assign count_pulse = cnt_en && freq_sync1 && !freq_prev;
+
+    // Monitor de banco: si el LED esta apagado o encendido fijo, la senial no
+    // esta llegando al pin. A baja frecuencia parpadea; a alta se ve a media luz.
+    assign led_activity = freq_sync1;
 
     // ---------------- Bloque 3: Banco de contadores BCD ----------------
     bcd_counter_bank u_bank (

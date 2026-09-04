@@ -89,8 +89,59 @@ esos mismos ~1 µs son 1 s, y el `0005` sería una entrada de 5 Hz.
 
 ## Implementación en la placa
 
-- `clk` → oscilador de 100 MHz (F14)
-- `rst` → BTN0
-- `freq_in` → BTN1 (prueba manual; los rebotes suman cuentas) o pin M14 del header
-  de servos para un generador de funciones (ver comentario en el XDC)
-- `D0_SEG` / `D0_AN` → display de 7 segmentos
+| Señal | Pin | Destino |
+|---|---|---|
+| `clk` | F14 | Oscilador de 100 MHz |
+| `rst` | J2 | BTN0 |
+| `freq_in` | M14 | Pin de señal del header de servo0 — entrada del generador |
+| `led_activity` | G1 | LED0, monitor de actividad de la entrada |
+| `D0_SEG` / `D0_AN` | — | Display de 7 segmentos, módulo D0 |
+
+El XDC deja comentada la alternativa de conectar `freq_in` a BTN1, para probar sin
+generador (cuenta los rebotes del pulsador: sirve como prueba de vida, no como
+medición).
+
+## Prueba con generador de funciones
+
+**Conexionado.** La salida del generador va al pin de **señal** del header de servo0
+y la masa del generador a **GND** del mismo header. Verificá en la serigrafía de la
+placa cuál es cada uno antes de conectar: el tercer pin del header es **+5 V** y no
+hay que tocarlo. Sin masa común la medición da cualquier cosa.
+
+**Ajustes del generador — revisar antes de conectar:**
+
+- Forma de onda: **cuadrada**.
+- Nivel: **0 a 3,3 V**. Según el equipo se logra con amplitud 3,3 Vpp y offset
+  1,65 V, o directamente en modo TTL/CMOS si permite fijar el nivel alto en 3,3 V.
+- **No uses la salida TTL/SYNC si es de 0 a 5 V**: el banco está en LVCMOS33 y 5 V
+  puede dañar el pin. Tampoco señales con excursión negativa (±5 V, ±10 V).
+- Frecuencia: entre 1 Hz y 9999 Hz. El display tiene 4 dígitos, arriba de 9999
+  desborda y vuelve a empezar.
+
+**Procedimiento.** Programá la placa, apretá BTN0 para resetear y andá subiendo la
+frecuencia:
+
+| Generador | Display esperado |
+|---|---|
+| 5 Hz | `0005` (y LED0 parpadeando visiblemente) |
+| 50 Hz | `0050` |
+| 1 kHz | `1000` |
+| 9,999 kHz | `9999` |
+| 10 kHz | `0000` — desborde esperado de los 4 dígitos |
+
+**Cómo saber que está midiendo bien:**
+
+- El número se actualiza **una vez por segundo**, no continuamente.
+- Al desconectar el generador el display cae a `0000` en la medición siguiente
+  (la entrada tiene pull-down, así que no cuenta ruido).
+- LED0 refleja la entrada ya sincronizada: apagado o encendido fijo significa que
+  la señal no está llegando al pin. Es lo primero que hay que mirar si el display
+  marca `0000` con el generador conectado.
+
+**Sobre la precisión.** Es normal que la lectura oscile ±1 cuenta (por ejemplo
+`0999` / `1000` / `1001` a 1 kHz). No es un error del diseño: los flancos de la
+señal no están sincronizados con la ventana de medición, así que según dónde caiga
+el borde de la ventana entra un flanco más o uno menos. Es el error de
+cuantización ±1 inherente al método directo, y es la razón por la que este método
+pierde precisión relativa a bajas frecuencias: ±1 sobre 5 Hz es un 20 % de error,
+mientras que ±1 sobre 9999 Hz es un 0,01 %.
