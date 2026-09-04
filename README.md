@@ -66,6 +66,27 @@ o sea una ventana de 1 µs en vez de 1 s (una ventana real serían 10⁸ ciclos,
 imposible de simular). Con una entrada de 200 ns de período deben entrar 5 flancos
 por ventana, así que la consola tiene que imprimir `display = 0005`.
 
+### Resultado de la simulación
+
+![Waveform de cuatro ventanas de medición](docs/img/waveform_simulacion.jpeg)
+
+Cuatro ventanas de medición consecutivas. Los arreglos BCD se leen
+`[unidades, decenas, centenas, millares]`, o sea que `5,0,0,0` es el número 0005.
+Cada fila confirma un punto de la consigna:
+
+| Señal | Qué demuestra |
+|---|---|
+| `state` | Pasa casi todo el tiempo en `S_MEDICION` y cae un instante en `S_CAPTURA` y `S_REINICIO` al cerrar cada ventana. Es la secuencia estricta que pide el Bloque 4. |
+| `cnt_en` | Alto durante toda la ventana, bajo en esos dos ciclos: los contadores no cuentan mientras se captura y se reinicia. |
+| `latch_en` / `cnt_rst` | Pulsos de **un** ciclo, y primero captura, después reinicia. Si fuera al revés, el registro guardaría ceros. |
+| `count_pulse` | Cinco pulsos angostos por ventana, uno por cada flanco ascendente de `freq_in`. Nunca anchos ni dobles: el sincronizador y el detector de flanco funcionan. |
+| `bcd_count` | Sube `1,0,0,0` → `5,0,0,0` y vuelve a cero al inicio de cada ventana. Cuenta y se reinicia. |
+| `bcd_disp` | Vale `0,0,0,0` en la primera ventana (todavía no se midió nada) y `5,0,0,0` desde la primera captura en adelante, **plano** mientras `bcd_count` ya está contando de nuevo. Esto es el latch cumpliendo su función: el display muestra un número estable en vez de parpadear. |
+| `medicion` | Llega a 4: las cuatro ventanas se completaron y todas midieron lo mismo. |
+
+Las ventanas duran ~1 µs porque el testbench acorta la base de tiempo. En la placa
+esos mismos ~1 µs son 1 s, y el `0005` sería una entrada de 5 Hz.
+
 ## Implementación en la placa
 
 - `clk` → oscilador de 100 MHz (F14)
