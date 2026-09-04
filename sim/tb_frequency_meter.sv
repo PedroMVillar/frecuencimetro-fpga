@@ -28,7 +28,7 @@ module tb_frequency_meter;
         .DIV_COUNT (DIV_COUNT),
         .MS_WINDOW (MS_WINDOW)
     ) dut (
-        .clk(clk), .rst(rst), .freq_in(freq_in), .D0_SEG(D0_SEG), .D0_AN(D0_AN)
+        .clk(clk), .rst(rst), .servo0(freq_in), .D0_SEG(D0_SEG), .D0_AN(D0_AN)
     );
 
     always #5 clk = ~clk;                       // 100 MHz

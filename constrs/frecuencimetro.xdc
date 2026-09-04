@@ -12,15 +12,15 @@ set_property CONFIG_VOLTAGE 3.3 [current_design]
 ## Reset general -> pulsador BTN0
 set_property -dict {PACKAGE_PIN J2 IOSTANDARD LVCMOS33} [get_ports {rst}]
 
-## Senial incognita -> pin de senial del header de servo0.
+## Senial incognita -> servo0 (mismo nombre de puerto que el XDC master).
 ## Aca se conecta la salida del generador de funciones (0 a 3,3 V, onda cuadrada).
-set_property -dict {PACKAGE_PIN M14 IOSTANDARD LVCMOS33} [get_ports {freq_in}]
+set_property -dict {PACKAGE_PIN M14 IOSTANDARD LVCMOS33} [get_ports {servo0}]
 
 ## Pull-down interno: con el generador desconectado la entrada queda en 0 firme.
-set_property PULLTYPE PULLDOWN [get_ports {freq_in}]
+set_property PULLTYPE PULLDOWN [get_ports {servo0}]
 
 ## Senial asincrona al clock: entra a un sincronizador, no se analiza su timing.
-set_false_path -from [get_ports freq_in]
+set_false_path -from [get_ports servo0]
 
 ## Display de 7 segmentos (modulo D0)
 set_property -dict {PACKAGE_PIN D5 IOSTANDARD LVCMOS33} [get_ports {D0_AN[0]}]

@@ -93,7 +93,7 @@ esos mismos ~1 µs son 1 s, y el `0005` sería una entrada de 5 Hz.
 |---|---|---|
 | `clk` | F14 | Oscilador de 100 MHz |
 | `rst` | J2 | BTN0 |
-| `freq_in` | M14 | Pin de señal del header de servo0 — entrada del generador |
+| `servo0` | M14 | Pin de señal del header de servo0 — entrada del generador |
 | `D0_SEG` / `D0_AN` | — | Display de 7 segmentos, módulo D0 |
 
 

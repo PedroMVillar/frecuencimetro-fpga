@@ -14,7 +14,7 @@ module Frequency_meter #(
 )(
     input  logic       clk,       // 100 MHz de la Boolean Board
     input  logic       rst,       // Reset general (pulsador)
-    input  logic       freq_in,   // Senial incognita (header de servo0)
+    input  logic       servo0,    // Senial incognita: header de servo0 (M14)
     output logic [7:0] D0_SEG,
     output logic [3:0] D0_AN
     );
@@ -50,7 +50,7 @@ module Frequency_meter #(
     logic count_pulse;
 
     always_ff @(posedge clk) begin
-        freq_sync0 <= freq_in;
+        freq_sync0 <= servo0;
         freq_sync1 <= freq_sync0;
         freq_prev  <= freq_sync1;
     end
