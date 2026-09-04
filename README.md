@@ -16,8 +16,9 @@ src/     Diseño sintetizable
   Frequency_meter.sv    Bloque 6 - Top Level
   disp7seg_controller.sv  Módulo de display provisto por la cátedra
 sim/     Testbenches
-  tb_bcd_counter.sv     Test unitario del contador BCD
-  tb_frequency_meter.sv Test de integración (ventana acortada por parámetros)
+  tb_bcd_counter.sv        Test unitario del contador BCD
+  tb_frequency_meter.sv    Test de integración (ventana acortada por parámetros)
+  wave_frequency_meter.tcl Arma el waveform con las señales relevantes
 constrs/
   frecuencimetro.xdc    Pines usados por el diseño
 docs/
@@ -44,6 +45,21 @@ docs/
 1. `Flow > Simulation Settings > Simulation top module name` = `tb_frequency_meter`
    (o `tb_bcd_counter`).
 2. `Run Simulation > Run Behavioral Simulation`.
+
+Con la simulación abierta, en la consola Tcl de la ventana de simulación:
+
+```tcl
+source {sim/wave_frequency_meter.tcl}
+```
+
+Eso reinicia, agrega las señales internas que importan (`state`, `cnt_en`,
+`latch_en`, `cnt_rst`, `count_pulse`, `bcd_count`, `bcd_disp`) y corre hasta el
+final. Después apretá **Zoom Fit**. Lo que hay que ver: `bcd_count` contándo y
+volviendo a cero cada ventana, mientras `bcd_disp` se queda quieto en el último
+valor medido.
+
+Nota: `D0_SEG` y `D0_AN` quedan en X durante toda la simulación. Es correcto — el
+refresco del display divide por 2^14 (~82 us) y el testbench termina a los 4,2 us.
 
 El testbench de integración instancia el top con `DIV_COUNT = 10` y `MS_WINDOW = 10`,
 o sea una ventana de 1 µs en vez de 1 s (una ventana real serían 10⁸ ciclos,
