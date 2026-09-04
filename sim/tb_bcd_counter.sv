@@ -16,19 +16,27 @@ module tb_bcd_counter;
 
     always #5 clk = ~clk;   // Clock de 100 MHz
 
-    int carries = 0;
-    always @(posedge clk) if (carry_out) carries++;
+    int   carries = 0;
+    logic carry_seen = 0;   // carry_out registrado, para poder imprimirlo
+
+    always @(posedge clk) begin
+        if (carry_out) carries++;
+        carry_seen <= carry_out;
+    end
 
     initial begin
+        // El estimulo se aplica en el flanco descendente: si soltaramos el reset
+        // en el mismo posedge que muestrea el DUT habria una race condition y el
+        // contador podria arrancar en X.
         rst = 1; en = 0;
-        @(posedge clk);
+        repeat (2) @(negedge clk);
         rst = 0;
 
         // 12 pulsos de enable: debe contar 0..9, desbordar y quedar en 2
         for (int i = 0; i < 12; i++) begin
             @(negedge clk); en = 1;
             @(negedge clk); en = 0;
-            $display("[%0t] pulso %0d -> count = %0d, carry = %0b", $time, i, count, carry_out);
+            $display("[%0t] pulso %0d -> count = %0d, carry = %0b", $time, i, count, carry_seen);
         end
 
         @(posedge clk);

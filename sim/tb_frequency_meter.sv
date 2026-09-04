@@ -53,8 +53,9 @@ module tb_frequency_meter;
     end
 
     initial begin
+        // Reset liberado en flanco descendente (ver nota en tb_bcd_counter)
         rst = 1;
-        repeat (5) @(posedge clk);
+        repeat (5) @(negedge clk);
         rst = 0;
 
         wait (medicion == 4);
